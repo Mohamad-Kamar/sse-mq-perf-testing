@@ -14,6 +14,6 @@ export const prepConsumers = (consumerNums, queueKey) => {
       }),
       receivedTimes: [],
     });
-    return consumers;
   }
+  return consumers;
 };
