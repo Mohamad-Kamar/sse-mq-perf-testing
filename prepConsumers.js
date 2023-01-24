@@ -8,7 +8,7 @@ export const prepConsumers = (consumerNums, queueKey) => {
     consumers.push({
       id,
       createdAt: Date.now(),
-      consumerObj: new Consumer("localhost:3491", {
+      consumerObj: new Consumer("http://localhost:3491", {
         queueKey,
         consumerID: id,
       }),

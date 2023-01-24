@@ -8,7 +8,7 @@ export const prepQueues = (queueNums) => {
       id: uuid4(),
       createdAt: Date.now(),
       queueObj: Queue.craeteQueue({
-        url: "localhost:3491",
+        url: "http://localhost:3491",
         queueKey: "tq1",
         queueType: "direct",
       }),
