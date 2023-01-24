@@ -5,7 +5,7 @@ export const prepMessages = (messageNumbers) => {
   const id = uuid4();
 
   for (let i = 0; i < messageNumbers; i++) {
-    messages.push(JSON.stringify({ id, createdAt: Date.now() }));
+    messages.push({ id, createdAt: Date.now() });
   }
   return messages;
 };
