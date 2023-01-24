@@ -1,10 +1,10 @@
-import { uuid4 } from "uuid4";
+import { v4 as uuidv4 } from "uuid";
 import { Consumer } from "@mkamar/mq-lib";
 
 export const prepConsumers = (consumerNums, queueKey) => {
   let consumers = [];
   for (let i = 0; i < consumerNums; i++) {
-    const id = uuid4();
+    const id = uuidv4();
     consumers.push({
       id,
       createdAt: Date.now(),
@@ -12,6 +12,7 @@ export const prepConsumers = (consumerNums, queueKey) => {
         queueKey,
         consumerID: id,
       }),
+      receivedTimes: [],
     });
     return consumers;
   }

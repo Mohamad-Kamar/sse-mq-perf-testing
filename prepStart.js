@@ -1,15 +1,15 @@
-import { prepConsumers } from "./prepConsumers";
-import { prepMessages } from "./prepMessages";
-import { prepProducers } from "./prepProducers";
-import { prepQueues } from "./prepQueues";
+import { prepConsumers } from "./prepConsumers.js";
+import { prepMessages } from "./prepMessages.js";
+import { prepProducers } from "./prepProducers.js";
+import { prepQueues } from "./prepQueues.js";
 
-export const prepStart = (
+export const prepStart = async (
   queueNums,
   consumerNums,
   producerNums,
   messageNums
 ) => {
-  const queues = prepQueues(queueNums);
+  const queues = await prepQueues(queueNums);
   const consumers = queues
     .map((queue) => prepConsumers(consumerNums, queue.id))
     .flat();

@@ -1,11 +1,11 @@
-import { uuid4 } from "uuid4";
+import { v4 as uuidv4 } from "uuid";
 
 export const prepMessages = (messageNumbers) => {
   const messages = [];
-  const id = uuid4();
 
   for (let i = 0; i < messageNumbers; i++) {
-    messages.push({ id, createdAt: Date.now() });
+    const id = uuidv4();
+    messages.push(id);
   }
   return messages;
 };

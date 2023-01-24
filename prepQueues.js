@@ -1,17 +1,18 @@
-import { uuid4 } from "uuid4";
+import { v4 as uuidv4 } from "uuid";
 import { Queue } from "@mkamar/mq-lib";
 
-export const prepQueues = (queueNums) => {
+export const prepQueues = async (queueNums) => {
   let queues = [];
   for (let i = 0; i < queueNums; i++) {
+    const currQ = await Queue.craeteQueue({
+      url: "http://localhost:3491",
+      queueKey: "tq1",
+      queueType: "direct",
+    });
     queues.push({
-      id: uuid4(),
+      id: uuidv4(),
       createdAt: Date.now(),
-      queueObj: Queue.craeteQueue({
-        url: "http://localhost:3491",
-        queueKey: "tq1",
-        queueType: "direct",
-      }),
+      queueObj: currQ,
     });
     return queues;
   }
