@@ -3,12 +3,12 @@ import { prepMessages } from "./prepMessages.js";
 import { prepProducers } from "./prepProducers.js";
 import { prepQueues } from "./prepQueues.js";
 
-export const prepStart = async (
+export const prepStart = async ({
   queueNums,
   consumerNums,
   producerNums,
-  messageNums
-) => {
+  messageNums,
+}) => {
   const queues = await prepQueues(queueNums);
   const consumers = queues
     .map((queue) => prepConsumers(consumerNums, queue.id))

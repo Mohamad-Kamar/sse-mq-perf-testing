@@ -15,6 +15,6 @@ export const prepQueues = async (queueNums) => {
       createdAt: Date.now(),
       queueObj: currQ,
     });
-    return queues;
   }
+  return queues;
 };
