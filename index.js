@@ -3,10 +3,10 @@ import { prepTearDown } from "./prepTearDown.js";
 
 (async () => {
   const { queues, consumers, producers, messages } = await prepStart({
-    1,
-    5,
-    1,
-    1
+    queueNums: 2,
+    consumerNums: 500,
+    producerNums: 1,
+    messageNums: 2,
   });
   const times = {};
   const connectedConsumers = await Promise.all(
@@ -16,7 +16,7 @@ import { prepTearDown } from "./prepTearDown.js";
         const message = JSON.parse(messageString.data);
         const timeDiff = Date.now() - message.createdAt;
         console.log(
-          `time diff for message ${message.message} on consumer ${consumer.consumerObj.consumerID} is ${timeDiff}`
+          `time diff for message ${message.message} on consumer ${consumer.consumerObj.consumerID} is ${timeDiff} ms`
         );
         consumer.consumerObj.delete();
       });
