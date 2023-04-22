@@ -1,4 +1,5 @@
 import amqp from 'amqplib';
+import { v4 as uuidv4 } from 'uuid';
 
 class RabbitMQAdapter {
   constructor(url) {
@@ -19,14 +20,14 @@ class RabbitMQAdapter {
     await this.channel.consume(
       q,
       (msg) => handler(JSON.parse(msg.content.toString())),
-      { noAck: true }
+      { noAck: true },
     );
   }
 
   async createProducers(producerNums, queueKey) {
     await this.init();
 
-    let producers = [];
+    const producers = [];
     for (let i = 0; i < producerNums; i++) {
       const id = uuidv4();
       producers.push({
@@ -44,8 +45,8 @@ class RabbitMQAdapter {
   async createConsumers(consumerNums, queueKey) {
     await this.init();
 
-    let consumers = [];
-    for (let i = 0; i < consumerNums; i++) {
+    const consumers = [];
+    for (let i = 0; i < consumerNums; i += 1) {
       const id = uuidv4();
       consumers.push({
         id,

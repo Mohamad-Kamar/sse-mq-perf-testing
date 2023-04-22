@@ -23,8 +23,8 @@ class KafkaAdapter {
   async createProducers(producerNums, topic) {
     await this.producer.connect();
 
-    let producers = [];
-    for (let i = 0; i < producerNums; i++) {
+    const producers = [];
+    for (let i = 0; i < producerNums; i += 1) {
       const id = uuidv4();
       producers.push({
         id,
@@ -40,8 +40,8 @@ class KafkaAdapter {
   async createConsumers(consumerNums, topic) {
     const groupId = `${topic}-group`;
 
-    let consumers = [];
-    for (let i = 0; i < consumerNums; i++) {
+    const consumers = [];
+    for (let i = 0; i < consumerNums; i += 1) {
       const id = uuidv4();
       consumers.push({
         id,

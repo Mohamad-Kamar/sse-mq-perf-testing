@@ -1,14 +1,14 @@
-import { v4 as uuidv4 } from "uuid";
-import { Queue } from "@mkamar/mq-lib";
+import { v4 as uuidv4 } from 'uuid';
+import { Queue } from '@mkamar/mq-lib';
 
 export const prepQueues = async (queueNums) => {
   const id = uuidv4();
-  let queues = [];
-  for (let i = 0; i < queueNums; i++) {
-    const currQ = await Queue.craeteQueue({
-      url: "http://localhost:3491",
+  const queues = [];
+  for (let i = 0; i < queueNums; i += 1) {
+    const currQ = Queue.craeteQueue({
+      url: 'http://localhost:3491',
       queueKey: id,
-      queueType: "fanout",
+      queueType: 'fanout',
     });
     queues.push({
       id,
@@ -16,5 +16,6 @@ export const prepQueues = async (queueNums) => {
       queueObj: currQ,
     });
   }
-  return queues;
+  const completedQueues = await Promise.all(queues);
+  return completedQueues;
 };

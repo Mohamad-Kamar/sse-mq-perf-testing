@@ -1,9 +1,11 @@
-import { adapter } from "./config";
-import { prepStart } from "./prepStart";
-import { prepTearDown } from "./prepTearDown";
+import { adapter } from './config';
+import { prepStart } from './prepStart';
+import { prepTearDown } from './prepTearDown';
 
 (async () => {
-  const { queues, consumers, producers, messages } = await prepStart({
+  const {
+    queues, consumers, producers, messages,
+  } = await prepStart({
     adapter,
     queueNums: 2,
     consumerNums: 500,
@@ -19,12 +21,12 @@ import { prepTearDown } from "./prepTearDown";
         const message = JSON.parse(messageString.data);
         const timeDiff = Date.now() - message.createdAt;
         console.log(
-          `time diff for message ${message.message} on consumer ${consumer.consumerObj.consumerID} is ${timeDiff} ms`
+          `time diff for message ${message.message} on consumer ${consumer.consumerObj.consumerID} is ${timeDiff} ms`,
         );
         consumer.consumerObj.delete();
       });
       return consumer;
-    })
+    }),
   );
   producers.forEach((prod) => {
     messages.forEach((messageID) => {

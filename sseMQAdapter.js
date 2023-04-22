@@ -1,4 +1,5 @@
 import { Consumer, Producer, Queue } from '@mkamar/mq-lib';
+import { v4 as uuidv4 } from 'uuid';
 
 class SSEMQAdapter {
   constructor(baseUrl) {
@@ -11,7 +12,7 @@ class SSEMQAdapter {
   }
 
   async createProducers(producerNums, queueKey) {
-    let producers = [];
+    const producers = [];
     for (let i = 0; i < producerNums; i++) {
       const id = uuidv4();
       producers.push({
@@ -26,7 +27,7 @@ class SSEMQAdapter {
   }
 
   async createConsumers(consumerNums, queueKey) {
-    let consumers = [];
+    const consumers = [];
     const createdAt = Date.now();
     for (let i = 0; i < consumerNums; i++) {
       const id = uuidv4();

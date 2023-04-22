@@ -1,7 +1,7 @@
-import { prepConsumers } from "./prepConsumers.js";
-import { prepMessages } from "./prepMessages.js";
-import { prepProducers } from "./prepProducers.js";
-import { prepQueues } from "./prepQueues.js";
+import { prepConsumers } from './prepConsumers';
+import { prepMessages } from './prepMessages';
+import { prepProducers } from './prepProducers';
+import { prepQueues } from './prepQueues';
 
 export const prepStart = async ({
   queueNums,
