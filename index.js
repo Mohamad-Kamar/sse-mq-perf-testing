@@ -1,13 +1,16 @@
-import { prepStart } from "./prepStart.js";
-import { prepTearDown } from "./prepTearDown.js";
+import { adapter } from "./config";
+import { prepStart } from "./prepStart";
+import { prepTearDown } from "./prepTearDown";
 
 (async () => {
   const { queues, consumers, producers, messages } = await prepStart({
+    adapter,
     queueNums: 2,
     consumerNums: 500,
     producerNums: 1,
     messageNums: 2,
   });
+
   const times = {};
   const connectedConsumers = await Promise.all(
     consumers.map(async (consumer) => {
@@ -31,5 +34,5 @@ import { prepTearDown } from "./prepTearDown.js";
     });
   });
 
-  prepTearDown({ consumers, queues });
+  prepTearDown({ adapter, consumers, queues });
 })();
