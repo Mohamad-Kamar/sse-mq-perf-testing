@@ -28,7 +28,7 @@ class RabbitMQAdapter {
     await this.init();
 
     const producers = [];
-    for (let i = 0; i < producerNums; i++) {
+    for (let i = 0; i < producerNums; i += 1) {
       const id = uuidv4();
       producers.push({
         id,
