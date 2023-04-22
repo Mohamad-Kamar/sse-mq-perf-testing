@@ -94,8 +94,4 @@ class KafkaAdapter {
   // }
 }
 
-export const kafkaConfig = {
-  clientId: 'your-client-id',      // Replace with an appropriate client ID for your application.
-  brokers: ['localhost:9092'],      // Replace with the address(es) of your Kafka broker(s).
-};
 export default KafkaAdapter;
