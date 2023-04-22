@@ -13,28 +13,30 @@ import { prepTearDown } from './prepTearDown';
     messageNums: 2,
   });
 
-  const times = {};
+  // Record the message receiving times for consumers
+  const handleMessage = (message) => {
+    const timeDiff = Date.now() - message.createdAt;
+    console.log(
+      `time diff for message ${message.message} on consumer ${adapter.getConsumerId()} is ${timeDiff} ms`,
+    );
+    adapter.deleteConsumer(
+      adapter.findConsumer(),
+    ); // assuming that findConsumer() gets you the correct consumer
+  };
+
+  // Connect consumers
   const connectedConsumers = await Promise.all(
     consumers.map(async (consumer) => {
-      await consumer.consumerObj.connect();
-      consumer.consumerObj.setOnMessage((messageString) => {
-        const message = JSON.parse(messageString.data);
-        const timeDiff = Date.now() - message.createdAt;
-        console.log(
-          `time diff for message ${message.message} on consumer ${consumer.consumerObj.consumerID} is ${timeDiff} ms`,
-        );
-        consumer.consumerObj.delete();
-      });
+      await adapter.connect(consumer, handleMessage);
       return consumer;
     }),
   );
-  producers.forEach((prod) => {
-    messages.forEach((messageID) => {
-      const currMessage = { message: messageID, createdAt: Date.now() };
-      times[messageID] = currMessage;
-      prod.producerObj.publish(JSON.stringify(currMessage));
-    });
+
+  // Send messages
+  producers.forEach((producer) => {
+    adapter.sendMessages(producer, messages);
   });
 
+  // Run tear down logic
   prepTearDown({ adapter, consumers, queues });
 })();
