@@ -4,12 +4,12 @@ import { prepTearDown } from './prepTearDown';
 
 (async () => {
   const {
-    queues, consumers, producers, messages,
+    queue, consumers, producers, messages,
   } = await prepStart({
     adapter,
-    queueNums: 2,
-    consumerNums: 500,
-    producerNums: 1,
+    queueNums: 1,
+    consumerNums: 2,
+    producerNums: 2,
     messageNums: 2,
   });
 
@@ -19,13 +19,10 @@ import { prepTearDown } from './prepTearDown';
     console.log(
       `time diff for message ${message.message} on consumer ${adapter.getConsumerId()} is ${timeDiff} ms`,
     );
-    adapter.deleteConsumer(
-      adapter.findConsumer(),
-    ); // assuming that findConsumer() gets you the correct consumer
   };
 
   // Connect consumers
-  const connectedConsumers = await Promise.all(
+  await Promise.all(
     consumers.map(async (consumer) => {
       await adapter.connect(consumer, handleMessage);
       return consumer;
@@ -38,5 +35,5 @@ import { prepTearDown } from './prepTearDown';
   });
 
   // Run tear down logic
-  prepTearDown({ adapter, consumers, queues });
+  prepTearDown({ adapter, consumers, queue });
 })();
