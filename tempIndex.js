@@ -1,3 +1,4 @@
+import { orchestrator } from './MessagesOrchestrator';
 import { adapter } from './config';
 
 const setup = async (
@@ -6,6 +7,7 @@ const setup = async (
   numOfConsumers,
   numOfMessages,
   adapterObject,
+  messageOrchestrator,
 ) => {
   await adapterObject.init();
   const queues = await adapterObject.createQueues(numOfQueues);
@@ -14,10 +16,12 @@ const setup = async (
     queues.map((q) => adapterObject.createProducers(q, numOfProducers)).flat(),
   ));
   const consumers = (await Promise.all(
-    queues.map((q) => adapterObject.createConsumers(q, numOfConsumers)).flat(),
+    queues.map((q) => adapterObject.createConsumers(q, numOfConsumers, messageOrchestrator)).flat(),
   ));
 
-  const messages = adapterObject.createMessages(numOfMessages);
+  const messages = (await Promise.all(
+    queues.map(() => adapterObject.createLocalMessages(numOfMessages, messageOrchestrator)).flat(),
+  ));
 
   return {
     queues, producers, consumers, messages,
@@ -39,25 +43,26 @@ async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) 
   const {
     consumers,
     producers,
-    fakeMessaegs,
+    messages,
     queues,
-  } = setup(numOfQueues, numOfProducers, numOfConsumers, numOfMessages, adapter);
+  } = setup(numOfQueues, numOfProducers, numOfConsumers, numOfMessages, adapter, orchestrator);
 
-  // Start timer
-
-  // Produce messages through each producer
-
-  // Stop timer
+  // Start message production timer
+  const productionStart = Date.now();
+  // Produce messages through producers
+  await Promise.all(messages.map(
+    (messageContent, idx) => producers[idx % producers.length].publish(messageContent),
+  ));
+  const productionEnd = Date.now();
+  const productionElapsedTime = productionEnd - productionStart;
 
   // Log time taken and average time for message to be produced
+  console.log(`TIME TAKEN FOR CREATIGN MESSAGES: ${productionElapsedTime}`);
 
-  // Start timer
-
-  // Consume messages
-
-  // Stop timer
-
+  // Wait for all messages to be consumed
+  await adapter.finishConsumption();
   // Log time taken and average time for message to be consumed
+  console.log(`TIME TAKEN FOR MESSAGE CONSUMPTION: ${orchestrator.getAverageTimeResults()}`);
 
   tearDown({
     consumers,
