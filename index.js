@@ -1,39 +1,73 @@
+import { orchestrator } from './MessagesOrchestrator';
 import { adapter } from './config';
-import { prepStart } from './setup/prepStart';
-import { prepTearDown } from './teardown/prepTearDown';
 
-(async () => {
-  const {
-    queue, consumers, producers, messages,
-  } = await prepStart({
-    adapter,
-    queueNums: 1,
-    consumerNums: 2,
-    producerNums: 2,
-    messageNums: 2,
-  });
+const setup = async (
+  numOfQueues,
+  numOfProducers,
+  numOfConsumers,
+  numOfMessages,
+  adapterObject,
+  messageOrchestrator,
+) => {
+  const queues = await adapterObject.createQueues(numOfQueues);
 
-  // Record the message receiving times for consumers
-  const handleMessage = (message) => {
-    const timeDiff = Date.now() - message.createdAt;
-    console.log(
-      `time diff for message ${message.message} on consumer ${adapter.getConsumerId()} is ${timeDiff} ms`,
-    );
+  const producers = (await Promise.all(
+    queues.map((q) => adapterObject.createProducers(q, numOfProducers)).flat(),
+  ));
+  const consumers = (await Promise.all(
+    queues.map((q) => adapterObject.createConsumers(q, numOfConsumers, messageOrchestrator)).flat(),
+  ));
+
+  const messages = (await Promise.all(
+    queues.map(() => adapterObject.createLocalMessages(numOfMessages, messageOrchestrator)).flat(),
+  ));
+
+  return {
+    queues, producers, consumers, messages,
   };
+};
 
-  // Connect consumers
-  await Promise.all(
-    consumers.map(async (consumer) => {
-      await adapter.connect(consumer, handleMessage);
-      return consumer;
-    }),
-  );
+const tearDown = async ({
+  consumers,
+  producers,
+  queues,
+  adapterObject,
+}) => {
+  adapterObject.deleteConsumers(consumers);
+  adapterObject.deleteProducers(producers);
+  adapterObject.deleteQueues(queues);
+};
 
-  // Send messages
-  producers.forEach((producer) => {
-    adapter.sendMessages(producer, messages);
+async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) {
+  const {
+    consumers,
+    producers,
+    messages,
+    queues,
+  } = setup(numOfQueues, numOfProducers, numOfConsumers, numOfMessages, adapter, orchestrator);
+
+  // Start message production timer
+  const productionStart = Date.now();
+  // Produce messages through producers
+  await Promise.all(messages.map(
+    (messageContent, idx) => producers[idx % producers.length].publish(messageContent),
+  ));
+  const productionEnd = Date.now();
+  const productionElapsedTime = productionEnd - productionStart;
+
+  // Log time taken and average time for message to be produced
+  console.log(`TIME TAKEN FOR CREATIGN MESSAGES: ${productionElapsedTime}`);
+
+  // Wait for all messages to be consumed
+  await orchestrator.finishConsumption();
+  // Log time taken and average time for message to be consumed
+  console.log(`TIME TAKEN FOR MESSAGE CONSUMPTION: ${orchestrator.getAverageTimeResults()}`);
+
+  tearDown({
+    consumers,
+    producers,
+    queues,
   });
+}
 
-  // Run tear down logic
-  prepTearDown({ adapter, consumers, queue });
-})();
+main(1, 2, 2, 50);
