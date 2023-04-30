@@ -2,16 +2,9 @@ import { Consumer, Queue, Producer } from '@mkamar/mq-lib';
 import { v4 as uuidv4 } from 'uuid';
 
 class SSEMQAdapter {
-  constructor(baseUrl) {
+  constructor(baseUrl, messagesOrchestrator) {
     this.baseUrl = baseUrl;
-  }
-
-  async connect(consumer, handleMessage) {
-    const { consumerObj, id } = consumer;
-    consumerObj.on('message', (message) => {
-      handleMessage(JSON.parse(message), id);
-    });
-    await consumerObj.connect();
+    this.messagesOrchestrator = messagesOrchestrator;
   }
 
   async createQueues(numOfQueues) {
@@ -43,7 +36,12 @@ class SSEMQAdapter {
     for (let i = 0; i < consumerNums; i += 1) {
       consumers.push(new Consumer(this.baseUrl, { queueKey, consumerID: uuidv4() }));
     }
-    await Promise.all(consumers.map((cons) => cons.createConsumer()));
+
+    await Promise.all(consumers.map((consumer) => consumer.createConsumer()));
+    await Promise.all(consumers.map(((consumer) => consumer.connect())));
+    consumers.forEach((consumer) => consumer.setOnMessage(
+      (message) => this.messagesOrchestrator.registerReceivedTime(message.messageContent),
+    ));
     return consumers;
   }
 
