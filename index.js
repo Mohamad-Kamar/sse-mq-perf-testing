@@ -1,6 +1,6 @@
 import { adapter } from './config';
-import { prepStart } from './prepStart';
-import { prepTearDown } from './prepTearDown';
+import { prepStart } from './setup/prepStart';
+import { prepTearDown } from './teardown/prepTearDown';
 
 (async () => {
   const {
