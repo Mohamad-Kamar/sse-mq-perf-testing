@@ -41,11 +41,18 @@ class SSEMQAdapter {
     const { queueKey } = queue;
     const consumers = [];
     for (let i = 0; i < consumerNums; i += 1) {
-      const id = uuidv4();
-      consumers.push(new Consumer(this.baseUrl, { queueKey, consumerID: id }));
+      consumers.push(new Consumer(this.baseUrl, { queueKey, consumerID: uuidv4() }));
     }
     await Promise.all(consumers.map((cons) => cons.createConsumer()));
     return consumers;
+  }
+
+  async createLocalMessages(numOfMessages) {
+    const messages = [];
+    for (let i = 0; i < numOfMessages; i += 1) {
+      messages.push(uuidv4());
+    }
+    return messages;
   }
 
   async sendMessages(producer, messages) {
@@ -56,7 +63,7 @@ class SSEMQAdapter {
   }
 
   async deleteConsumer(consumer) {
-    consumer.consumerObj.delete();
+    consumer.delete();
   }
 
   async deleteQueue(queue) {
