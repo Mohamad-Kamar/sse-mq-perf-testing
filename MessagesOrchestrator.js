@@ -31,7 +31,22 @@ class MessagesOrchestrator {
       (currTime, totalTime) => currTime + totalTime,
       0,
     );
-    return allElapsedTime.length / allElapsedTime;
+    return allElapsedTime / validMessages.length;
+  }
+
+  async finishConsumption(timeInterval = 1000) {
+    const waitForAllPublishedAt = () => Object.keys(this.messages).every(
+      (messageID) => this.messages[messageID].receivedAt !== null,
+    );
+
+    return new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+        if (waitForAllPublishedAt()) {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, timeInterval);
+    });
   }
 }
 

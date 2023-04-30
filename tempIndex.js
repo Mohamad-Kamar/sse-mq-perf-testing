@@ -9,7 +9,6 @@ const setup = async (
   adapterObject,
   messageOrchestrator,
 ) => {
-  await adapterObject.init();
   const queues = await adapterObject.createQueues(numOfQueues);
 
   const producers = (await Promise.all(
@@ -36,7 +35,7 @@ const tearDown = async ({
 }) => {
   adapterObject.deleteConsumers(consumers);
   adapterObject.deleteProducers(producers);
-  adapterObject.deleteDelete(queues);
+  adapterObject.deleteQueues(queues);
 };
 
 async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) {
@@ -60,7 +59,7 @@ async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) 
   console.log(`TIME TAKEN FOR CREATIGN MESSAGES: ${productionElapsedTime}`);
 
   // Wait for all messages to be consumed
-  await adapter.finishConsumption();
+  await orchestrator.finishConsumption();
   // Log time taken and average time for message to be consumed
   console.log(`TIME TAKEN FOR MESSAGE CONSUMPTION: ${orchestrator.getAverageTimeResults()}`);
 
