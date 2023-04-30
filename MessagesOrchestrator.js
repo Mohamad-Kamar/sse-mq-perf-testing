@@ -3,7 +3,6 @@ class MessagesOrchestrator {
 
   addMessage(messageID) {
     this.messages[messageID] = {
-      createdAt: Date.now(),
       publishedAt: null,
       receivedAt: null,
       elapsedTime: null,
@@ -21,7 +20,7 @@ class MessagesOrchestrator {
 
   registerElapsedTime(messageID) {
     const receivedMessage = this.messages[messageID];
-    receivedMessage.elapsedTime = receivedMessage.receivedAt - receivedMessage.createdAt;
+    receivedMessage.elapsedTime = receivedMessage.receivedAt - receivedMessage.publishedAt;
   }
 
   getAverageTimeResults() {
