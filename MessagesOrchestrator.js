@@ -1,4 +1,4 @@
-export class MessagesOrchestrator {
+class MessagesOrchestrator {
   messages = {};
 
   addMessage(messageID) {
@@ -35,3 +35,5 @@ export class MessagesOrchestrator {
     return allElapsedTime.length / allElapsedTime;
   }
 }
+
+export const orchestrator = new MessagesOrchestrator();
