@@ -41,12 +41,12 @@ async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) 
     // Log time taken and average time for message to be consumed
     console.log(`TIME TAKEN FOR MESSAGE CONSUMPTION: ${orchestrator.getAverageTimeResults()}`);
 
-    await tearDown({
+    await tearDown(
       consumers,
       producers,
       queues,
       adapter,
-    });
+    );
   } catch (error) {
     console.error('An error occurred:', error);
   }
