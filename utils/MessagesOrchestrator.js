@@ -1,6 +1,10 @@
 class MessagesOrchestrator {
   messages = {};
 
+  constructor() {
+    this.messages = {};
+  }
+
   addMessage(messageID) {
     this.messages[messageID] = {
       publishedAt: null,
