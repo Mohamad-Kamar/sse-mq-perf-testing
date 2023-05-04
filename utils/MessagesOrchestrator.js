@@ -1,8 +1,10 @@
 class MessagesOrchestrator {
-  messages = {};
-
   constructor() {
     this.messages = {};
+  }
+
+  getMessages() {
+    return this.messages;
   }
 
   addMessage(messageID) {
@@ -20,6 +22,7 @@ class MessagesOrchestrator {
   registerReceivedTime(messageID) {
     const receivedMessage = this.messages[messageID];
     receivedMessage.receivedAt = Date.now();
+    this.registerElapsedTime(messageID);
   }
 
   registerElapsedTime(messageID) {
@@ -28,14 +31,14 @@ class MessagesOrchestrator {
   }
 
   getAverageTimeResults() {
-    const validMessages = Object.keys(this.messages)
-      .filter((currMessage) => (this.messages[currMessage.messageID].elapsedTime))
-      .map((currMessage) => (this.messages[currMessage.messageID].elapsedTime));
-    const allElapsedTime = validMessages.reduce(
+    const validMessagesElapsedTime = Object.keys(this.messages)
+      .filter((currMessage) => (this.messages[currMessage].elapsedTime))
+      .map((currMessage) => (this.messages[currMessage].elapsedTime));
+    const allElapsedTime = validMessagesElapsedTime.reduce(
       (currTime, totalTime) => currTime + totalTime,
       0,
     );
-    return allElapsedTime / validMessages.length;
+    return allElapsedTime / validMessagesElapsedTime.length;
   }
 
   async finishConsumption(timeInterval = 1000) {

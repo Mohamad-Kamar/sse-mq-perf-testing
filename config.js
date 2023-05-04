@@ -1,6 +1,6 @@
-import SSEMQAdapter from './messageQueueAdapters/sseMQAdapter';
-import RabbitMQAdapter from './messageQueueAdapters/rabbitMQAdapter';
-import KafkaAdapter from './messageQueueAdapters/kafkaAdapter';
+import SSEMQAdapter from './messageQueueAdapters/sseMQAdapter.js';
+import RabbitMQAdapter from './messageQueueAdapters/rabbitMQAdapter.js';
+import KafkaAdapter from './messageQueueAdapters/kafkaAdapter.js';
 
 const MESSAGE_QUEUE = 'ssemq'; // Change this value to switch between different adapters.
 

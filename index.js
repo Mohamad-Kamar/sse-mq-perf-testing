@@ -1,7 +1,7 @@
-import { orchestrator } from './utils/MessagesOrchestrator';
-import { adapter } from './config';
-import { setup } from './setup/mainSetup';
-import { tearDown } from './teardown/mainTearDown';
+import { orchestrator } from './utils/MessagesOrchestrator.js';
+import { adapter } from './config.js';
+import { setup } from './setup/mainSetup.js';
+import { tearDown } from './teardown/mainTearDown.js';
 
 async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) {
   try {
@@ -24,7 +24,10 @@ async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) 
     // Produce messages through producers
     await Promise.all(
       messages.map(
-        (messageContent, idx) => producers[idx % producers.length].publish(messageContent),
+        (messageContent, idx) => {
+          orchestrator.registerPublishedTime(messageContent);
+          return producers[idx % producers.length].publish(messageContent);
+        },
       ),
     );
     const productionEnd = Date.now();
@@ -49,4 +52,4 @@ async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) 
   }
 }
 
-main(1, 2, 2, 50);
+main(1, 2, 2, 200);

@@ -36,10 +36,9 @@ class SSEMQAdapter {
       consumers.push(new Consumer(this.baseUrl, { queueKey, consumerID: uuidv4() }));
     }
 
-    await Promise.all(consumers.map((consumer) => consumer.createConsumer()));
     await Promise.all(consumers.map(((consumer) => consumer.connect())));
     consumers.forEach((consumer) => consumer.setOnMessage(
-      (message) => messageOrchestrator.registerReceivedTime(message.messageContent),
+      (message) => messageOrchestrator.registerReceivedTime(message.data),
     ));
     return consumers;
   }
@@ -48,7 +47,7 @@ class SSEMQAdapter {
     for (let i = 0; i < numOfMessages; i += 1) {
       messageOrchestrator.addMessage(uuidv4());
     }
-    return Object.keys(messageOrchestrator);
+    return Object.keys(messageOrchestrator.getMessages());
   }
 
   async sendMessages(producer, messages) {

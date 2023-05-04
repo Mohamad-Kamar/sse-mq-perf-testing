@@ -9,15 +9,15 @@ export const setup = async (
   const queues = await adapterObject.createQueues(numOfQueues);
 
   const producers = (await Promise.all(
-    queues.map((q) => adapterObject.createProducers(q, numOfProducers)).flat(),
-  ));
+    queues.map((q) => adapterObject.createProducers(q, numOfProducers)),
+  )).flat();
   const consumers = (await Promise.all(
-    queues.map((q) => adapterObject.createConsumers(q, numOfConsumers, messageOrchestrator)).flat(),
-  ));
+    queues.map((q) => adapterObject.createConsumers(q, numOfConsumers, messageOrchestrator)),
+  )).flat();
 
   const messages = (await Promise.all(
-    queues.map(() => adapterObject.createLocalMessages(numOfMessages, messageOrchestrator)).flat(),
-  ));
+    queues.map(() => adapterObject.createLocalMessages(numOfMessages, messageOrchestrator)),
+  )).flat();
 
   return {
     queues, producers, consumers, messages,
