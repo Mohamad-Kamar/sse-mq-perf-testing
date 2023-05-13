@@ -1,8 +1,10 @@
 import { Consumer, Queue, Producer } from '@mkamar/mq-lib';
 import { v4 as uuidv4 } from 'uuid';
+import IMQAdapter from './IMQAdapter';
 
-class SSEMQAdapter {
+class SSEMQAdapter extends IMQAdapter {
   constructor(baseUrl) {
+    super(baseUrl);
     this.baseUrl = baseUrl;
   }
 
