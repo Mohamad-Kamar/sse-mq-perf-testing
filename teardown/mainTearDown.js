@@ -4,7 +4,7 @@ export const tearDown = async (
   queues,
   adapterObject,
 ) => {
-  adapterObject.deleteConsumers(consumers);
-  adapterObject.deleteProducers(producers);
-  adapterObject.deleteQueues(queues);
+  await adapterObject.deleteConsumers(consumers);
+  await adapterObject.deleteProducers(producers);
+  await adapterObject.deleteQueues(queues);
 };
