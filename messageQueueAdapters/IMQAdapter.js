@@ -1,9 +1,4 @@
 export default class IMQAdapter {
-  constructor(baseUrl) {
-    // Implement logic for each adapter accordingly
-    throw new Error('Constructor method must be implemented');
-  }
-
   async createQueues(numOfQueues) {
     throw new Error('createQueues method must be implemented');
   }
