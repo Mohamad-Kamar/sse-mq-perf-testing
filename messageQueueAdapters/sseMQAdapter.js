@@ -66,7 +66,7 @@ class SSEMQAdapter extends IMQAdapter {
   async deleteQueue(queue) {
     return Queue.deleteQueue({
       url: this.baseUrl,
-      queueKey: queue.id,
+      queueKey: queue.queueKey,
     });
   }
 
