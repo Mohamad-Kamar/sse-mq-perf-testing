@@ -20,5 +20,8 @@ module.exports = {
     'import/prefer-default-export': 'off',
     'class-methods-use-this': 'off',
     'linebreak-style': 0,
+    'constructor-super': 'off',
+    'no-this-before-super': 'off',
+    'no-unused-vars': 'warn',
   },
 };
