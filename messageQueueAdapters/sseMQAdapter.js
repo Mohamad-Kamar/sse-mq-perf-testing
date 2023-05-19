@@ -1,6 +1,6 @@
 import { Consumer, Queue, Producer } from '@mkamar/mq-lib';
 import { v4 as uuidv4 } from 'uuid';
-import IMQAdapter from './IMQAdapter';
+import IMQAdapter from './IMQAdapter.js';
 
 class SSEMQAdapter extends IMQAdapter {
   constructor(baseUrl) {
@@ -59,15 +59,27 @@ class SSEMQAdapter extends IMQAdapter {
     });
   }
 
-  async deleteConsumer(consumer) {
-    consumer.delete();
+  async deleteQueues(queues) {
+    return Promise.all(queues.map((q) => this.deleteQueue(q)));
   }
 
   async deleteQueue(queue) {
-    Queue.deleteQueue({
+    return Queue.deleteQueue({
       url: this.baseUrl,
       queueKey: queue.id,
     });
+  }
+
+  async deleteProducers(producers) {
+    return Promise.resolve();
+  }
+
+  async deleteConsumers(consumers) {
+    return Promise.all(consumers.map((consumer) => this.deleteConsumer(consumer)));
+  }
+
+  async deleteConsumer(consumer) {
+    return consumer.delete();
   }
 }
 
