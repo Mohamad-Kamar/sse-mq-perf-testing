@@ -41,7 +41,15 @@ class KafkaAdapter extends IMQAdapter {
     const producers = [];
 
     for (let i = 0; i < producerNums; i += 1) {
-      producers.push({ topic: queue });
+      producers.push({
+        topic: queue,
+        publish: async (messageContent) => {
+          await this.producerInstance.send({
+            topic: queue,
+            messages: [{ value: messageContent }],
+          });
+        },
+      });
     }
 
     return producers;
@@ -82,11 +90,6 @@ class KafkaAdapter extends IMQAdapter {
     const messagesToSend = messages.map((messageID) => ({
       value: JSON.stringify({ message: messageID, createdAt: Date.now() }),
     }));
-
-    return this.producerInstance.send({
-      topic: producer.topic,
-      messages: messagesToSend,
-    });
   }
 
   async deleteQueues(queues) {
