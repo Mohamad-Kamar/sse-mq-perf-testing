@@ -1,83 +1,106 @@
 import amqp from 'amqplib';
 import { v4 as uuidv4 } from 'uuid';
+import IMQAdapter from './IMQAdapter.js';
 
-class RabbitMQAdapter {
-  constructor(url) {
-    this.url = url;
+class RabbitMQAdapter extends IMQAdapter {
+  constructor(rabbitMQConfig) {
+    super(rabbitMQConfig);
+    this.rabbitMQConfig = rabbitMQConfig;
     this.connection = null;
     this.channel = null;
+
+    this.init();
   }
 
   async init() {
-    this.connection = await amqp.connect(this.url);
+    this.connection = await amqp.connect(this.rabbitMQConfig.url);
     this.channel = await this.connection.createChannel();
   }
 
-  async connect(consumer, handler) {
-    const { consumerObj } = consumer;
-    const q = consumerObj.queueKey;
-    await this.channel.assertQueue(q, consumerObj.queueParams);
-    await this.channel.consume(
-      q,
-      (msg) => handler(JSON.parse(msg.content.toString())),
-      { noAck: true },
-    );
+  async createQueues(numOfQueues) {
+    const queuePromises = Array.from({ length: numOfQueues }, async (_, index) => {
+      const queueName = `queue-${index}`;
+      await this.channel.assertQueue(queueName);
+      return queueName;
+    });
+
+    return Promise.all(queuePromises);
   }
 
-  async createProducers(producerNums, queueKey) {
-    await this.init();
-
+  async createProducers(queue, producerNums) {
     const producers = [];
+
     for (let i = 0; i < producerNums; i += 1) {
-      const id = uuidv4();
-      producers.push({
-        id,
-        createdAt: Date.now(),
-        producerObj: {
-          queueKey,
-          queueParams: { durable: false },
-        },
-      });
+      producers.push({ queue });
     }
+
     return producers;
   }
 
-  async createConsumers(consumerNums, queueKey) {
-    await this.init();
-
+  async createConsumers(queue, consumerNums, messageOrchestrator) {
     const consumers = [];
-    for (let i = 0; i < consumerNums; i += 1) {
-      const id = uuidv4();
-      consumers.push({
-        id,
-        createdAt: Date.now(),
-        consumerObj: {
-          queueKey,
-          queueParams: { durable: false },
-        },
-      });
-    }
+
+    const consumerPromises = Array.from({ length: consumerNums }, async (_, i) => {
+      const consumerID = uuidv4();
+      await this.channel.consume(queue, (msg) => {
+        if (msg) {
+          const messageContent = msg.content.toString();
+          messageOrchestrator.registerReceivedTime(messageContent);
+          this.channel.ack(msg);
+        }
+      }, { consumerTag: consumerID });
+
+      consumers.push({ queue, consumerID });
+    });
+
+    await Promise.all(consumerPromises);
     return consumers;
   }
 
-  async sendMessages(producer, messages) {
-    const q = producer.producerObj.queueKey;
-    await this.channel.assertQueue(q, producer.producerObj.queueParams);
+  async createLocalMessages(numOfMessages, messageOrchestrator) {
+    for (let i = 0; i < numOfMessages; i += 1) {
+      messageOrchestrator.addMessage(uuidv4());
+    }
 
-    messages.forEach((messageID) => {
-      const currMessage = { message: messageID, createdAt: Date.now() };
-      this.channel.sendToQueue(q, Buffer.from(JSON.stringify(currMessage)));
-    });
+    return Object.keys(messageOrchestrator.getMessages());
   }
 
-  async deleteConsumer(consumer) {
-    // RabbitMQ automatically removes consumer when the channel is closed.
-    await this.channel.close();
+  async sendMessages(producer, messages) {
+    const messageBuffers = messages.map((messageID) => {
+      const messageContent = JSON.stringify({ message: messageID, createdAt: Date.now() });
+      return Buffer.from(messageContent);
+    });
+
+    messageBuffers.forEach((buffer) => {
+      this.channel.sendToQueue(producer.queue, buffer);
+    });
+
+    return messageBuffers.length;
+  }
+
+  async deleteQueues(queues) {
+    const deletePromises = queues.map((queue) => this.deleteQueue(queue));
+    return Promise.all(deletePromises);
   }
 
   async deleteQueue(queue) {
-    await this.channel.assertQueue(queue.id);
-    await this.channel.deleteQueue(queue.id);
+    await this.channel.deleteQueue(queue);
+    return true;
+  }
+
+  async deleteProducers(producers) {
+    // No need for specific producer deletion as it's handled at the connection level.
+    return true;
+  }
+
+  async deleteConsumers(consumers) {
+    const deletePromises = consumers.map((consumer) => this.deleteConsumer(consumer));
+    return Promise.all(deletePromises);
+  }
+
+  async deleteConsumer(consumer) {
+    await this.channel.cancel(consumer.consumerID);
+    return true;
   }
 }
 
