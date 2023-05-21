@@ -5,11 +5,11 @@ import KafkaAdapter from './messageQueueAdapters/kafkaAdapter.js';
 const MESSAGE_QUEUE = 'ssemq'; // Change this value to switch between different adapters.
 
 const rabbitMQConfig = {
-  url: 'amqp://localhost',
+  url: 'amqp://localhost:5672',
 };
 
 const kafkaConfig = {
-  clientId: 'your-client-id',
+  clientId: 'sse-mq-perf-test',
   brokers: ['localhost:9092'],
 };
 

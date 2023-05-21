@@ -73,7 +73,7 @@ class KafkaAdapter extends IMQAdapter {
   }
 
   async createLocalMessages(numOfMessages, messageOrchestrator) {
-    for (let i = 0; i < numOfMessages; i++) {
+    for (let i = 0; i < numOfMessages; i += 1) {
       messageOrchestrator.addMessage(uuidv4());
     }
 
