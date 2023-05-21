@@ -34,7 +34,7 @@ async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) 
     const productionElapsedTime = productionEnd - productionStart;
 
     console.log(`For ${numOfQueues} queues,
-    ${numOfProducers} producers],
+    ${numOfProducers} producers,
     ${numOfConsumers} consumers,
     ${numOfMessages} messages`);
 

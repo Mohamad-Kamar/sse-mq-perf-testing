@@ -8,7 +8,7 @@
     "lint:fix": "eslint --fix ./*.js",
     "start": "node index.js",
     "start:ssemq": "MESSAGE_QUEUE='ssemq' node index.js",
-    "start:rmq": "MESSAGE_QUEUE='rabbitmq' node index.js",
+    "start:rabbitmq": "MESSAGE_QUEUE='rabbitmq' node index.js",
     "start:kafka": "MESSAGE_QUEUE='kafka' node index.js"
   },
   "keywords": [],

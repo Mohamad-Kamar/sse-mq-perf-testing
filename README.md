@@ -15,8 +15,6 @@ To test different messaging queues, update the `MESSAGE_QUEUE` constant in `conf
 - 'kafka'
 - 'rabbitmq'
 
-Make sure to configure the connection settings for each messaging queue in the `config.js` file.
-
 ## Setup
 
 1. Clone the repository: `git clone https://github.com/Mohamad-Kamar/sse-mq-perf-testing.git`
@@ -41,6 +39,10 @@ To run the performance test, use the following command:
 This will execute the `index.js` file, which contains the main testing logic.
 
 The test results will be displayed on the console, displaying the time taken for message creation and consumption, as well as the average time for message processing.
+
+To test different queues from the start command without changing the config file, use the command:
+
+```npm run start:<your-queue-name>```
 
 ## Cleaning Up
 
