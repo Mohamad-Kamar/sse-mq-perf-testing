@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint:fix": "eslint --fix ./*.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "start:ssemq": "MESSAGE_QUEUE='ssemq' node index.js",
+    "start:rmq": "MESSAGE_QUEUE='rabbitmq' node index.js",
+    "start:kafka": "MESSAGE_QUEUE='kafka' node index.js"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +18,7 @@
     "@mkamar/mq-lib": "^0.0.9",
     "amqplib": "^0.10.3",
     "cross-fetch": "^3.1.5",
+    "dotenv": "^16.0.3",
     "kafkajs": "^2.2.4",
     "uuid": "^9.0.0"
   },

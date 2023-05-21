@@ -8,6 +8,10 @@ class SSEMQAdapter extends IMQAdapter {
     this.baseUrl = baseUrl;
   }
 
+  async init() {
+    return '';
+  }
+
   async createQueues(numOfQueues) {
     const id = uuidv4();
     const queues = [];
@@ -50,13 +54,6 @@ class SSEMQAdapter extends IMQAdapter {
       messageOrchestrator.addMessage(uuidv4());
     }
     return Object.keys(messageOrchestrator.getMessages());
-  }
-
-  async sendMessages(producer, messages) {
-    return messages.map((messageID) => {
-      const currMessage = { message: messageID, createdAt: Date.now() };
-      return producer.producerObj.publish(JSON.stringify(currMessage));
-    });
   }
 
   async deleteQueues(queues) {
