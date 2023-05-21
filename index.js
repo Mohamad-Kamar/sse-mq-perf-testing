@@ -36,7 +36,7 @@ async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) 
     console.log(`For ${numOfQueues} queues,
     ${numOfProducers} producers],
     ${numOfConsumers} consumers,
-    and ${numOfMessages} messages,`);
+    ${numOfMessages} messages`);
 
     // Log time taken and average time for message to be produced
     console.log(`TIME TAKEN FOR CREATING MESSAGES: ${productionElapsedTime}`);

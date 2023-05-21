@@ -1,4 +1,4 @@
-import { Kafka, Admin } from 'kafkajs';
+import { Kafka } from 'kafkajs';
 import { v4 as uuidv4 } from 'uuid';
 import IMQAdapter from './IMQAdapter.js';
 
@@ -8,8 +8,6 @@ class KafkaAdapter extends IMQAdapter {
     this.kafkaConfig = kafkaConfig;
     this.kafkaInstance = null;
     this.producerInstance = null;
-
-    this.init();
   }
 
   async init() {

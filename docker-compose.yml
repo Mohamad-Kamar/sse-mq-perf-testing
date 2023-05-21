@@ -27,6 +27,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKAJS_NO_PARTITIONER_WARNING: 1
 
   rabbitmq:
     image: "rabbitmq:3-management"

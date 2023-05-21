@@ -2,9 +2,9 @@ import SSEMQAdapter from './messageQueueAdapters/sseMQAdapter.js';
 import RabbitMQAdapter from './messageQueueAdapters/rabbitMQAdapter.js';
 import KafkaAdapter from './messageQueueAdapters/kafkaAdapter.js';
 
-const MESSAGE_QUEUE = 'ssemq'; // Change this value to switch between different adapters.
+// const MESSAGE_QUEUE = 'ssemq'; // Change this value to switch between different adapters.
 // const MESSAGE_QUEUE = 'rabbitmq';
-// const MESSAGE_QUEUE = 'kafka';
+const MESSAGE_QUEUE = 'kafka';
 
 const rabbitMQConfig = {
   url: 'amqp://localhost:5672',
@@ -20,9 +20,11 @@ const sseMQConfig = {
 };
 
 const adapters = {
-  ssemq: new SSEMQAdapter(sseMQConfig.baseUrl),
-  rabbitmq: new RabbitMQAdapter(rabbitMQConfig.url),
+  // ssemq: new SSEMQAdapter(sseMQConfig.baseUrl),
+  // rabbitmq: new RabbitMQAdapter(rabbitMQConfig.url),
   kafka: new KafkaAdapter(kafkaConfig),
 };
 
-export const adapter = adapters[MESSAGE_QUEUE];
+const adapter = adapters[MESSAGE_QUEUE];
+await adapter.init();
+export { adapter };

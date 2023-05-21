@@ -8,8 +8,6 @@ class RabbitMQAdapter extends IMQAdapter {
     this.rabbitMQConfig = rabbitMQConfig;
     this.connection = null;
     this.channel = null;
-
-    this.init();
   }
 
   async init() {

@@ -1,4 +1,8 @@
 export default class IMQAdapter {
+  async init() {
+    throw new Error('init method must be implemented');
+  }
+
   async createQueues(numOfQueues) {
     throw new Error('createQueues method must be implemented');
   }
