@@ -1,97 +1,123 @@
-import { Kafka } from 'kafkajs';
+import { Kafka, Admin } from 'kafkajs';
 import { v4 as uuidv4 } from 'uuid';
+import IMQAdapter from './IMQAdapter.js';
 
-class KafkaAdapter {
+class KafkaAdapter extends IMQAdapter {
   constructor(kafkaConfig) {
-    this.kafka = new Kafka(kafkaConfig);
-    this.producer = this.kafka.producer();
+    super(kafkaConfig);
+    this.kafkaConfig = kafkaConfig;
+    this.kafkaInstance = null;
+    this.producerInstance = null;
+
+    this.init();
   }
 
-  async connect(consumer, handler) {
-    const { consumerObj } = consumer;
-    const kafkaConsumer = this.kafka.consumer({ groupId: consumerObj.groupId });
-    await kafkaConsumer.connect();
-    await kafkaConsumer.subscribe({ topic: consumerObj.topic, fromBeginning: true });
+  async init() {
+    this.kafkaInstance = new Kafka(this.kafkaConfig);
+    this.adminInstance = this.kafkaInstance.admin();
+    this.producerInstance = this.kafkaInstance.producer();
 
-    await kafkaConsumer.run({
-      eachMessage: async ({ message }) => {
-        handler(JSON.parse(message.value.toString()));
-      },
+    await this.adminInstance.connect();
+    await this.producerInstance.connect();
+  }
+
+  async createQueues(numOfQueues) {
+    const queuePrefix = 'queue-';
+    const topicsToCreate = Array(numOfQueues)
+      .fill(null)
+      .map((_, index) => ({
+        topic: `${queuePrefix}${index}`,
+        numPartitions: 1, // Adjust the number of partitions as per your requirements
+        replicationFactor: 1, // Adjust the replication factor as per your requirements
+      }));
+
+    await this.adminInstance.createTopics({
+      topics: topicsToCreate,
+      waitForLeaders: true,
     });
+
+    return topicsToCreate.map((topicConfig) => topicConfig.topic);
   }
 
-  async createProducers(producerNums, topic) {
-    await this.producer.connect();
-
+  async createProducers(queue, producerNums) {
     const producers = [];
+
     for (let i = 0; i < producerNums; i += 1) {
-      const id = uuidv4();
-      producers.push({
-        id,
-        createdAt: Date.now(),
-        producerObj: {
-          topic,
-        },
-      });
+      producers.push({ topic: queue });
     }
+
     return producers;
   }
 
-  async createConsumers(consumerNums, topic) {
-    const groupId = `${topic}-group`;
-
+  async createConsumers(queue, consumerNums, messageOrchestrator) {
     const consumers = [];
-    for (let i = 0; i < consumerNums; i += 1) {
-      const id = uuidv4();
-      consumers.push({
-        id,
-        createdAt: Date.now(),
-        consumerObj: {
-          topic,
-          groupId,
+
+    const consumerPromises = Array.from({ length: consumerNums }, async (_, i) => {
+      const currentConsumer = this.kafkaInstance.consumer({ groupId: uuidv4() });
+
+      await currentConsumer.connect();
+      await currentConsumer.subscribe({ topic: queue, fromBeginning: true });
+
+      currentConsumer.run({
+        eachMessage: async ({ message }) => {
+          messageOrchestrator.registerReceivedTime(message.value.toString());
         },
       });
-    }
+
+      consumers.push(currentConsumer);
+    });
+
+    await Promise.all(consumerPromises);
+
     return consumers;
   }
 
-  async sendMessages(producer, messages) {
-    const { topic } = producer.producerObj;
-
-    const messagePayloads = messages.map((messageID) => {
-      const currMessage = { message: messageID, createdAt: Date.now() };
-      return {
-        topic,
-        messages: [{ value: JSON.stringify(currMessage), key: messageID }],
-      };
-    });
-
-    for (const messagePayload of messagePayloads) {
-      await this.producer.send(messagePayload);
+  async createLocalMessages(numOfMessages, messageOrchestrator) {
+    for (let i = 0; i < numOfMessages; i++) {
+      messageOrchestrator.addMessage(uuidv4());
     }
+
+    return Object.keys(messageOrchestrator.getMessages());
+  }
+
+  async sendMessages(producer, messages) {
+    const messagesToSend = messages.map((messageID) => ({
+      value: JSON.stringify({ message: messageID, createdAt: Date.now() }),
+    }));
+
+    return this.producerInstance.send({
+      topic: producer.topic,
+      messages: messagesToSend,
+    });
+  }
+
+  async deleteQueues(queues) {
+    // In Kafka, topics deletion should be managed by the Kafka broker.
+    // Thus, there is no need to delete topics in the adapter.
+    return this.deleteAdmin();
+  }
+
+  async deleteAdmin() {
+    return this.adminInstance.disconnect();
+  }
+
+  async deleteQueue(queue) {
+    // Same reasoning as in deleteQueues() method
+    return Promise.resolve();
+  }
+
+  async deleteProducers(producers) {
+    await this.producerInstance.disconnect();
+    return Promise.resolve();
+  }
+
+  async deleteConsumers(consumers) {
+    return Promise.all(consumers.map((consumer) => this.deleteConsumer(consumer)));
   }
 
   async deleteConsumer(consumer) {
-    // In Kafka, consumers are automatically removed when they leave the group.
-    // So the implementers may run their own custom logic to manually remove a consumer from the group.
+    return consumer.disconnect();
   }
-
-  // Note: Deleting a topic in Kafka is a highly debated feature and not always recommended,
-  // but here is a helper function that may delete a topic if your Kafka allows it.
-  // Uncomment the following block if you want to enable this feature.
-  //
-  // async deleteTopic(topic) {
-  //   const admin = this.kafka.admin();
-  //   await admin.connect();
-  //   try {
-  //     await admin.deleteTopics({
-  //       topics: [topic],
-  //       timeout: 1000,
-  //     });
-  //   } finally {
-  //     await admin.disconnect();
-  //   }
-  // }
 }
 
 export default KafkaAdapter;
