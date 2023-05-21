@@ -3,6 +3,8 @@ import RabbitMQAdapter from './messageQueueAdapters/rabbitMQAdapter.js';
 import KafkaAdapter from './messageQueueAdapters/kafkaAdapter.js';
 
 const MESSAGE_QUEUE = 'ssemq'; // Change this value to switch between different adapters.
+// const MESSAGE_QUEUE = 'rabbitmq';
+// const MESSAGE_QUEUE = 'kafka';
 
 const rabbitMQConfig = {
   url: 'amqp://localhost:5672',
