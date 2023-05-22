@@ -7,4 +7,5 @@ export const tearDown = async (
   await adapterObject.deleteConsumers(consumers);
   await adapterObject.deleteProducers(producers);
   await adapterObject.deleteQueues(queues);
+  console.log('FINISHED RUN');
 };

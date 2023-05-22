@@ -37,16 +37,18 @@ class KafkaAdapter extends IMQAdapter {
     const producers = [];
 
     const producerPromises = Array.from({ length: producerNums }, async (_, i) => {
-      const currentProducer = this.kafkaInstancethis.kafkaInstance.producer();
+      const currentProducer = this.kafkaInstance.producer();
       await currentProducer.connect();
       producers.push({
         topic: queue,
         publish: async (messageContent) => {
-          await this.producerInstance.send({
+          await currentProducer.send({
             topic: queue,
             messages: [{ value: messageContent }],
           });
+          console.log('message sent');
         },
+        currentProducer,
       });
     });
     await Promise.all(producerPromises);
@@ -84,14 +86,26 @@ class KafkaAdapter extends IMQAdapter {
     return Object.keys(messageOrchestrator.getMessages());
   }
 
+  async deleteConsumers(consumers) {
+    return Promise.all(consumers.map((consumer) => this.deleteConsumer(consumer)));
+  }
+
+  async deleteConsumer(consumer) {
+    return consumer.disconnect();
+  }
+
+  async deleteProducers(producers) {
+    return Promise.all(producers.map((prod) => this.deleteProducer(prod)));
+  }
+
+  async deleteProducer(producer) {
+    return producer.currentProducer.disconnect();
+  }
+
   async deleteQueues(queues) {
     // In Kafka, topics deletion should be managed by the Kafka broker.
     // Thus, there is no need to delete topics in the adapter.
     return this.deleteAdmin();
-  }
-
-  async deleteAdmin() {
-    return this.adminInstance.disconnect();
   }
 
   async deleteQueue(queue) {
@@ -99,17 +113,8 @@ class KafkaAdapter extends IMQAdapter {
     return Promise.resolve();
   }
 
-  async deleteProducers(producers) {
-    await this.producerInstance.disconnect();
-    return Promise.resolve();
-  }
-
-  async deleteConsumers(consumers) {
-    return Promise.all(consumers.map((consumer) => this.deleteConsumer(consumer)));
-  }
-
-  async deleteConsumer(consumer) {
-    return consumer.disconnect();
+  async deleteAdmin() {
+    return this.adminInstance.disconnect();
   }
 }
 

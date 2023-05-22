@@ -12,7 +12,7 @@ class RabbitMQAdapter extends IMQAdapter {
 
   async init() {
     this.connection = await amqp.connect(this.rabbitMQConfig.url);
-    this.channel = await this.connection.createChannel();
+    this.channel = await this.connection.createConfirmChannel();
   }
 
   async createQueues(numOfQueues) {
@@ -28,10 +28,32 @@ class RabbitMQAdapter extends IMQAdapter {
   async createProducers(queue, producerNums) {
     const producers = [];
 
-    for (let i = 0; i < producerNums; i += 1) {
-      producers.push({ queue });
-    }
-
+    const producerPromises = Array.from({ length: producerNums }, async (_, i) => {
+      const currentConnection = await amqp.connect(this.rabbitMQConfig.url);
+      const currentProducer = await currentConnection.createConfirmChannel();
+      producers.push({
+        exchange: queue,
+        publish: async (messageContent) => {
+          await new Promise(
+            (resolve, reject) => {
+              currentProducer.sendToQueue(
+                queue,
+                Buffer.from(messageContent),
+                { durable: false, noAck: false },
+                (err, ok) => {
+                  if (err !== null) {
+                    console.warn('Message nacked!'); reject(err);
+                  } else {
+                    console.log('Message acked'); resolve(ok);
+                  }
+                },
+              );
+            },
+          );
+        },
+      });
+    });
+    await Promise.all(producerPromises);
     return producers;
   }
 
@@ -40,7 +62,9 @@ class RabbitMQAdapter extends IMQAdapter {
 
     const consumerPromises = Array.from({ length: consumerNums }, async (_, i) => {
       const consumerID = uuidv4();
-      await this.channel.consume(queue, (msg) => {
+      const currentConnection = await amqp.connect(this.rabbitMQConfig.url);
+      const currentConsumer = await currentConnection.createConfirmChannel();
+      await currentConsumer.consume(queue, (msg) => {
         if (msg) {
           const messageContent = msg.content.toString();
           messageOrchestrator.registerReceivedTime(messageContent);
@@ -48,7 +72,7 @@ class RabbitMQAdapter extends IMQAdapter {
         }
       }, { consumerTag: consumerID });
 
-      consumers.push({ queue, consumerID });
+      consumers.push({ currentConsumer, queue, consumerID });
     });
 
     await Promise.all(consumerPromises);
@@ -63,17 +87,23 @@ class RabbitMQAdapter extends IMQAdapter {
     return Object.keys(messageOrchestrator.getMessages());
   }
 
-  async sendMessages(producer, messages) {
-    const messageBuffers = messages.map((messageID) => {
-      const messageContent = JSON.stringify({ message: messageID, createdAt: Date.now() });
-      return Buffer.from(messageContent);
-    });
+  async deleteConsumers(consumers) {
+    const deletePromises = consumers.map((consumer) => this.deleteConsumer(consumer));
+    return Promise.all(deletePromises);
+  }
 
-    messageBuffers.forEach((buffer) => {
-      this.channel.sendToQueue(producer.queue, buffer);
-    });
+  async deleteConsumer(consumer) {
+    await consumer.currentConsumer.cancel(consumer.consumerID);
+    return true;
+  }
 
-    return messageBuffers.length;
+  async deleteProducers(producers) {
+    return Promise.all(producers.map((prod) => this.deleteProducer(prod)));
+  }
+
+  async deleteProducer(producer) {
+    // No need for specific producer deletion as it's handled at the connection level.
+    return Promise.resolve();
   }
 
   async deleteQueues(queues) {
@@ -83,21 +113,6 @@ class RabbitMQAdapter extends IMQAdapter {
 
   async deleteQueue(queue) {
     await this.channel.deleteQueue(queue);
-    return true;
-  }
-
-  async deleteProducers(producers) {
-    // No need for specific producer deletion as it's handled at the connection level.
-    return true;
-  }
-
-  async deleteConsumers(consumers) {
-    const deletePromises = consumers.map((consumer) => this.deleteConsumer(consumer));
-    return Promise.all(deletePromises);
-  }
-
-  async deleteConsumer(consumer) {
-    await this.channel.cancel(consumer.consumerID);
     return true;
   }
 }
