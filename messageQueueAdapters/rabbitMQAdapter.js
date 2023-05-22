@@ -68,7 +68,7 @@ class RabbitMQAdapter extends IMQAdapter {
         if (msg) {
           const messageContent = msg.content.toString();
           messageOrchestrator.registerReceivedTime(messageContent);
-          this.channel.ack(msg);
+          currentConsumer.ack(msg);
         }
       }, { consumerTag: consumerID });
 
