@@ -1,6 +1,10 @@
 class MessagesOrchestrator {
   constructor() {
     this.messages = {};
+    this.totalReceivedMessages = 0;
+    this.expectedMessageCount = 0;
+    this.consumptionFinishedResolver = null;
+    this.consumptionFinishedPromise = null;
   }
 
   getMessages() {
@@ -23,6 +27,12 @@ class MessagesOrchestrator {
     const receivedMessage = this.messages[messageID];
     receivedMessage.receivedAt = Date.now();
     this.registerElapsedTime(messageID);
+    this.totalReceivedMessages += 1;
+
+    if (this.totalReceivedMessages === this.expectedMessageCount
+       && this.consumptionFinishedResolver) {
+      this.consumptionFinishedResolver();
+    }
   }
 
   registerElapsedTime(messageID) {
@@ -42,19 +52,18 @@ class MessagesOrchestrator {
     return allElapsedTime / validMessagesElapsedTime.length;
   }
 
-  async finishConsumption(timeInterval = 1000) {
-    const waitForAllPublishedAt = () => Object.keys(this.messages).every(
-      (messageID) => this.messages[messageID].receivedAt !== null,
-    );
+  async finishConsumption(expectedMessageCount) {
+    this.expectedMessageCount = expectedMessageCount;
 
-    return new Promise((resolve) => {
-      const checkInterval = setInterval(() => {
-        if (waitForAllPublishedAt()) {
-          clearInterval(checkInterval);
-          resolve();
-        }
-      }, timeInterval);
+    if (this.totalReceivedMessages === this.expectedMessageCount) {
+      return;
+    }
+
+    this.consumptionFinishedPromise = new Promise((resolve) => {
+      this.consumptionFinishedResolver = resolve;
     });
+
+    await this.consumptionFinishedPromise;
   }
 }
 
