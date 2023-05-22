@@ -56,6 +56,22 @@ class SSEMQAdapter extends IMQAdapter {
     return Object.keys(messageOrchestrator.getMessages());
   }
 
+  async deleteConsumers(consumers) {
+    return Promise.all(consumers.map((consumer) => this.deleteConsumer(consumer)));
+  }
+
+  async deleteConsumer(consumer) {
+    return consumer.delete();
+  }
+
+  async deleteProducers(producers) {
+    return Promise.all(producers.map((prod) => this.deleteProducer(prod)));
+  }
+
+  async deleteProducer(producer) {
+    return Promise.resolve();
+  }
+
   async deleteQueues(queues) {
     return Promise.all(queues.map((q) => this.deleteQueue(q)));
   }
@@ -65,18 +81,6 @@ class SSEMQAdapter extends IMQAdapter {
       url: this.baseUrl,
       queueKey: queue.queueKey,
     });
-  }
-
-  async deleteProducers(producers) {
-    return Promise.resolve();
-  }
-
-  async deleteConsumers(consumers) {
-    return Promise.all(consumers.map((consumer) => this.deleteConsumer(consumer)));
-  }
-
-  async deleteConsumer(consumer) {
-    return consumer.delete();
   }
 }
 

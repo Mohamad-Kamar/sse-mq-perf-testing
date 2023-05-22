@@ -19,8 +19,24 @@ export default class IMQAdapter {
     throw new Error('createLocalMessages method must be implemented');
   }
 
+  async deleteConsumers(consumers) {
+    throw new Error('deleteConsumers method must be implemented');
+  }
+
   async deleteConsumer(consumer) {
     throw new Error('deleteConsumer method must be implemented');
+  }
+
+  async deleteProducers(producers) {
+    throw new Error('deleteProducers method must be implemented');
+  }
+
+  async deleteProducer(producer) {
+    throw new Error('deleteProducer method must be implemented');
+  }
+
+  async deleteQueues(queues) {
+    throw new Error('deleteQueues method must be implemented');
   }
 
   async deleteQueue(queue) {
