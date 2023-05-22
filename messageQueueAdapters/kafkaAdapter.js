@@ -7,16 +7,12 @@ class KafkaAdapter extends IMQAdapter {
     super(kafkaConfig);
     this.kafkaConfig = kafkaConfig;
     this.kafkaInstance = null;
-    this.producerInstance = null;
   }
 
   async init() {
     this.kafkaInstance = new Kafka(this.kafkaConfig);
     this.adminInstance = this.kafkaInstance.admin();
-    this.producerInstance = this.kafkaInstance.producer();
-
     await this.adminInstance.connect();
-    await this.producerInstance.connect();
   }
 
   async createQueues(numOfQueues) {
@@ -40,7 +36,9 @@ class KafkaAdapter extends IMQAdapter {
   async createProducers(queue, producerNums) {
     const producers = [];
 
-    for (let i = 0; i < producerNums; i += 1) {
+    const producerPromises = Array.from({ length: producerNums }, async (_, i) => {
+      const currentProducer = this.kafkaInstancethis.kafkaInstance.producer();
+      await currentProducer.connect();
       producers.push({
         topic: queue,
         publish: async (messageContent) => {
@@ -50,8 +48,8 @@ class KafkaAdapter extends IMQAdapter {
           });
         },
       });
-    }
-
+    });
+    await Promise.all(producerPromises);
     return producers;
   }
 
@@ -84,12 +82,6 @@ class KafkaAdapter extends IMQAdapter {
     }
 
     return Object.keys(messageOrchestrator.getMessages());
-  }
-
-  async sendMessages(producer, messages) {
-    const messagesToSend = messages.map((messageID) => ({
-      value: JSON.stringify({ message: messageID, createdAt: Date.now() }),
-    }));
   }
 
   async deleteQueues(queues) {

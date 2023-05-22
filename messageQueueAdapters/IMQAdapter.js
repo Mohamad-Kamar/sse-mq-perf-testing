@@ -19,10 +19,6 @@ export default class IMQAdapter {
     throw new Error('createLocalMessages method must be implemented');
   }
 
-  async sendMessages(producer, messages) {
-    throw new Error('sendMessages method must be implemented');
-  }
-
   async deleteConsumer(consumer) {
     throw new Error('deleteConsumer method must be implemented');
   }
