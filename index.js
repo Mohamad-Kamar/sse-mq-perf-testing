@@ -36,13 +36,13 @@ async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) 
     console.log(`For ${numOfQueues} queues,
     ${numOfProducers} producers,
     ${numOfConsumers} consumers,
-    ${numOfMessages} messages`);
+    ${messages.length} messages`);
 
     // Log time taken and average time for message to be produced
     console.log(`TIME TAKEN FOR CREATING MESSAGES: ${productionElapsedTime}`);
 
     // Wait for all messages to be consumed
-    await orchestrator.finishConsumption(1000);
+    await orchestrator.finishConsumption(messages.length);
     // Log time taken and average time for message to be consumed
     console.log(`TIME TAKEN FOR MESSAGE CONSUMPTION: ${orchestrator.getAverageTimeResults()}`);
 
