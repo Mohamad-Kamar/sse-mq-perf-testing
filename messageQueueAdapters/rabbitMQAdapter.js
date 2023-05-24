@@ -34,6 +34,7 @@ class RabbitMQAdapter extends IMQAdapter {
       producers.push({
         exchange: queue,
         publish: async (messageContent) => {
+          console.log(`Sending message with content: ${messageContent}`);
           await new Promise(
             (resolve, reject) => {
               currentProducer.sendToQueue(
@@ -42,15 +43,18 @@ class RabbitMQAdapter extends IMQAdapter {
                 { durable: false, noAck: false },
                 (err, ok) => {
                   if (err !== null) {
-                    console.warn('Message nacked!'); reject(err);
+                    reject(err);
                   } else {
-                    console.log('Message acked'); resolve(ok);
+                    resolve(ok);
                   }
                 },
               );
             },
           );
+          console.log(`MessageSent: ${messageContent}`);
         },
+        currentProducer,
+        currentConnection,
       });
     });
     await Promise.all(producerPromises);
@@ -64,15 +68,20 @@ class RabbitMQAdapter extends IMQAdapter {
       const consumerID = uuidv4();
       const currentConnection = await amqp.connect(this.rabbitMQConfig.url);
       const currentConsumer = await currentConnection.createConfirmChannel();
+
+      await currentConsumer.prefetch(1); // Add prefetch
+
       await currentConsumer.consume(queue, (msg) => {
         if (msg) {
           const messageContent = msg.content.toString();
-          messageOrchestrator.registerReceivedTime(messageContent);
           currentConsumer.ack(msg);
+          messageOrchestrator.registerReceivedTime(messageContent);
         }
-      }, { consumerTag: consumerID });
-
-      consumers.push({ currentConsumer, queue, consumerID });
+      }, { consumerTag: consumerID, noAck: false });
+      console.log(`Consumer Created with ID ${consumerID}`);
+      consumers.push({
+        currentConsumer, queue, consumerID, currentConnection,
+      });
     });
 
     await Promise.all(consumerPromises);
@@ -80,11 +89,14 @@ class RabbitMQAdapter extends IMQAdapter {
   }
 
   async createLocalMessages(numOfMessages, messageOrchestrator) {
+    const messages = [];
     for (let i = 0; i < numOfMessages; i += 1) {
-      messageOrchestrator.addMessage(uuidv4());
+      const id = uuidv4();
+      messages.push(id);
+      messageOrchestrator.addMessage(id);
     }
 
-    return Object.keys(messageOrchestrator.getMessages());
+    return messages;
   }
 
   async deleteConsumers(consumers) {
@@ -93,7 +105,8 @@ class RabbitMQAdapter extends IMQAdapter {
   }
 
   async deleteConsumer(consumer) {
-    await consumer.currentConsumer.cancel(consumer.consumerID);
+    await consumer.currentConnection.close();
+
     return true;
   }
 
@@ -102,8 +115,10 @@ class RabbitMQAdapter extends IMQAdapter {
   }
 
   async deleteProducer(producer) {
-    // No need for specific producer deletion as it's handled at the connection level.
-    return Promise.resolve();
+    // Close the producer channel and its connection
+    await producer.currentConnection.close();
+
+    return true;
   }
 
   async deleteQueues(queues) {
@@ -113,6 +128,7 @@ class RabbitMQAdapter extends IMQAdapter {
 
   async deleteQueue(queue) {
     await this.channel.deleteQueue(queue);
+    await this.connection.close();
     return true;
   }
 }

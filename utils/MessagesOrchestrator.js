@@ -38,7 +38,7 @@ class MessagesOrchestrator {
   registerElapsedTime(messageID) {
     const receivedMessage = this.messages[messageID];
     receivedMessage.elapsedTime = receivedMessage.receivedAt - receivedMessage.publishedAt;
-    console.log(messageID);
+    console.log(`registered message time ${messageID}`);
   }
 
   getAverageTimeResults() {

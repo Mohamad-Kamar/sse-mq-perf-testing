@@ -34,8 +34,8 @@ async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) 
     const productionElapsedTime = productionEnd - productionStart;
 
     console.log(`For ${numOfQueues} queues,
-    ${numOfProducers} producers,
-    ${numOfConsumers} consumers,
+    ${producers.length} producers,
+    ${consumers.length} consumers,
     ${messages.length} messages`);
 
     // Log time taken and average time for message to be produced
@@ -57,4 +57,4 @@ async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) 
   }
 }
 
-main(1, 1, 1, 1000);
+main(2, 1, 1, 1000);
