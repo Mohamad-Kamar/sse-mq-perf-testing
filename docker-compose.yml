@@ -40,7 +40,7 @@ services:
       RABBITMQ_DEFAULT_USER: "guest"
       RABBITMQ_DEFAULT_PASS: "guest"
 
-  sse-mq:
+  ssemq:
     image: "public.ecr.aws/c7j7g2t5/sse-mq:latest"
     container_name: ssemq
     ports:

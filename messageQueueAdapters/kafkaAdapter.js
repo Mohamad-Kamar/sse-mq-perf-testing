@@ -42,11 +42,12 @@ class KafkaAdapter extends IMQAdapter {
       producers.push({
         topic: queue,
         publish: async (messageContent) => {
+          console.log(`Sending message with content: ${messageContent}`);
           await currentProducer.send({
             topic: queue,
             messages: [{ value: messageContent }],
           });
-          console.log('message sent');
+          console.log(`MessageSent: ${messageContent}`);
         },
         currentProducer,
       });
@@ -59,16 +60,18 @@ class KafkaAdapter extends IMQAdapter {
     const consumers = [];
 
     const consumerPromises = Array.from({ length: consumerNums }, async (_, i) => {
-      const currentConsumer = this.kafkaInstance.consumer({ groupId: uuidv4() });
+      const groupId = uuidv4();
+      const currentConsumer = this.kafkaInstance.consumer({ groupId });
 
       await currentConsumer.connect();
       await currentConsumer.subscribe({ topic: queue, fromBeginning: true });
 
-      currentConsumer.run({
+      await currentConsumer.run({
         eachMessage: async ({ message }) => {
           messageOrchestrator.registerReceivedTime(message.value.toString());
         },
       });
+      console.log(`Consumer Created with ID ${groupId}`);
 
       consumers.push(currentConsumer);
     });
@@ -103,14 +106,14 @@ class KafkaAdapter extends IMQAdapter {
   }
 
   async deleteQueues(queues) {
-    // In Kafka, topics deletion should be managed by the Kafka broker.
-    // Thus, there is no need to delete topics in the adapter.
+    await Promise.all(queues.map((q) => this.deleteQueue(q)));
     return this.deleteAdmin();
   }
 
   async deleteQueue(queue) {
-    // Same reasoning as in deleteQueues() method
-    return Promise.resolve();
+    return this.adminInstance.deleteTopics({
+      topics: [queue],
+    });
   }
 
   async deleteAdmin() {

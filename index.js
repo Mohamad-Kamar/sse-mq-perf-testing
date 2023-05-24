@@ -57,4 +57,4 @@ async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) 
   }
 }
 
-main(2, 1, 1, 1000);
+main(1, 1, 1, 5000);

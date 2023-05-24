@@ -74,8 +74,8 @@ class RabbitMQAdapter extends IMQAdapter {
       await currentConsumer.consume(queue, (msg) => {
         if (msg) {
           const messageContent = msg.content.toString();
-          currentConsumer.ack(msg);
           messageOrchestrator.registerReceivedTime(messageContent);
+          currentConsumer.ack(msg);
         }
       }, { consumerTag: consumerID, noAck: false });
       console.log(`Consumer Created with ID ${consumerID}`);

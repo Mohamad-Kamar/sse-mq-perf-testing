@@ -19,7 +19,7 @@ class SSEMQAdapter extends IMQAdapter {
       const currQ = Queue.craeteQueue({
         url: 'http://localhost:3491',
         queueKey: id,
-        queueType: 'fanout',
+        queueType: 'roundrobin',
       });
       queues.push(currQ);
     }
@@ -29,9 +29,21 @@ class SSEMQAdapter extends IMQAdapter {
   async createProducers(queue, producerNums) {
     const { queueKey } = queue;
     const producers = [];
-    for (let i = 0; i < producerNums; i += 1) {
-      producers.push(new Producer(this.baseUrl, { queueKey }));
-    }
+    const producerPromises = Array.from({ length: producerNums }, async (_, i) => {
+      const currentProducer = new Producer(this.baseUrl, { queueKey });
+
+      producers.push({
+        publish: async (messageContent) => {
+          console.log(`Sending message with content: ${messageContent}`);
+          await currentProducer.publish(messageContent);
+          console.log(`MessageSent: ${messageContent}`);
+        },
+        queue,
+        currentProducer,
+      });
+    });
+    await Promise.all(producerPromises);
+
     return producers;
   }
 
