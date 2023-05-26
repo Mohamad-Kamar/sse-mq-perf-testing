@@ -33,11 +33,7 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
       KAFKAJS_NO_PARTITIONER_WARNING: 1
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: "1g"
+    cpus: 0.5
     volumes:
       - ./kafka-server.properties:/etc/kafka/server.properties
 
@@ -51,19 +47,12 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: "guest"
       RABBITMQ_DEFAULT_PASS: "guest"
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: "1g"
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-S 1:1"
+    cpus: 0.5
 
   ssemq:
     image: "public.ecr.aws/c7j7g2t5/sse-mq:latest"
     container_name: ssemq
     ports:
       - "3491:3491"
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: "1g"
+    cpus: 0.5
