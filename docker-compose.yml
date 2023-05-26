@@ -10,6 +10,11 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1g"
 
   kafka:
     image: "confluentinc/cp-kafka:latest"
@@ -28,6 +33,13 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
       KAFKAJS_NO_PARTITIONER_WARNING: 1
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: "1g"
+    volumes:
+      - ./kafka-server.properties:/etc/kafka/server.properties
 
   rabbitmq:
     image: "rabbitmq:3-management"
@@ -39,9 +51,19 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: "guest"
       RABBITMQ_DEFAULT_PASS: "guest"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1g"
 
   ssemq:
     image: "public.ecr.aws/c7j7g2t5/sse-mq:latest"
     container_name: ssemq
     ports:
       - "3491:3491"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1g"
