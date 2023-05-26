@@ -1,6 +1,7 @@
 import { Kafka } from 'kafkajs';
 import { v4 as uuidv4 } from 'uuid';
 import IMQAdapter from './IMQAdapter.js';
+import { output } from '../output.js';
 
 class KafkaAdapter extends IMQAdapter {
   constructor(kafkaConfig) {
@@ -42,12 +43,12 @@ class KafkaAdapter extends IMQAdapter {
       producers.push({
         topic: queue,
         publish: async (messageContent) => {
-          console.log(`Sending message with content: ${messageContent}`);
+          output.push(`Sending message with content: ${messageContent}`);
           await currentProducer.send({
             topic: queue,
             messages: [{ value: messageContent }],
           });
-          console.log(`MessageSent: ${messageContent}`);
+          output.push(`MessageSent: ${messageContent}`);
         },
         currentProducer,
       });
@@ -71,7 +72,7 @@ class KafkaAdapter extends IMQAdapter {
           messageOrchestrator.registerReceivedTime(message.value.toString());
         },
       });
-      console.log(`Consumer Created with ID ${groupId}`);
+      output.push(`Consumer Created with ID ${groupId}`);
 
       consumers.push(currentConsumer);
     });

@@ -1,6 +1,7 @@
 import amqp from 'amqplib';
 import { v4 as uuidv4 } from 'uuid';
 import IMQAdapter from './IMQAdapter.js';
+import { output } from '../output.js';
 
 class RabbitMQAdapter extends IMQAdapter {
   constructor(rabbitMQConfig) {
@@ -34,7 +35,7 @@ class RabbitMQAdapter extends IMQAdapter {
       producers.push({
         exchange: queue,
         publish: async (messageContent) => {
-          console.log(`Sending message with content: ${messageContent}`);
+          output.push(`Sending message with content: ${messageContent}`);
           await new Promise(
             (resolve, reject) => {
               currentProducer.sendToQueue(
@@ -51,7 +52,7 @@ class RabbitMQAdapter extends IMQAdapter {
               );
             },
           );
-          console.log(`MessageSent: ${messageContent}`);
+          output.push(`MessageSent: ${messageContent}`);
         },
         currentProducer,
         currentConnection,
@@ -78,7 +79,7 @@ class RabbitMQAdapter extends IMQAdapter {
           currentConsumer.ack(msg);
         }
       }, { consumerTag: consumerID, noAck: false });
-      console.log(`Consumer Created with ID ${consumerID}`);
+      output.push(`Consumer Created with ID ${consumerID}`);
       consumers.push({
         currentConsumer, queue, consumerID, currentConnection,
       });

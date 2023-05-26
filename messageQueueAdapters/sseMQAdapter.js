@@ -1,6 +1,7 @@
 import { Consumer, Queue, Producer } from '@mkamar/mq-lib';
 import { v4 as uuidv4 } from 'uuid';
 import IMQAdapter from './IMQAdapter.js';
+import { output } from '../output.js';
 
 class SSEMQAdapter extends IMQAdapter {
   constructor(baseUrl) {
@@ -34,9 +35,9 @@ class SSEMQAdapter extends IMQAdapter {
 
       producers.push({
         publish: async (messageContent) => {
-          console.log(`Sending message with content: ${messageContent}`);
+          output.push(`Sending message with content: ${messageContent}`);
           await currentProducer.publish(messageContent);
-          console.log(`MessageSent: ${messageContent}`);
+          output.push(`MessageSent: ${messageContent}`);
         },
         queue,
         currentProducer,

@@ -2,6 +2,7 @@ import { orchestrator } from './utils/MessagesOrchestrator.js';
 import { adapter } from './config.js';
 import { setup } from './setup/mainSetup.js';
 import { tearDown } from './teardown/mainTearDown.js';
+import { output } from './output.js';
 
 async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) {
   try {
@@ -33,18 +34,18 @@ async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) 
     const productionEnd = Date.now();
     const productionElapsedTime = productionEnd - productionStart;
 
-    console.log(`For ${numOfQueues} queues,
+    output.push(`For ${numOfQueues} queues,
     ${producers.length} producers,
     ${consumers.length} consumers,
     ${messages.length} messages`);
 
     // Log time taken and average time for message to be produced
-    console.log(`TIME TAKEN FOR CREATING MESSAGES: ${productionElapsedTime}`);
+    output.push(`TIME TAKEN FOR CREATING MESSAGES: ${productionElapsedTime}`);
 
     // Wait for all messages to be consumed
     await orchestrator.finishConsumption(messages.length);
     // Log time taken and average time for message to be consumed
-    console.log(`TIME TAKEN FOR MESSAGE CONSUMPTION: ${orchestrator.getAverageTimeResults()}`);
+    output.push(`TIME TAKEN FOR MESSAGE CONSUMPTION: ${orchestrator.getAverageTimeResults()}`);
 
     await tearDown(
       consumers,
@@ -57,4 +58,5 @@ async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) 
   }
 }
 
-main(1, 1, 1, 5000);
+await main(1, 1, 1, 5000);
+console.log(output.join('\n'));

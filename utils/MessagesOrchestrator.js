@@ -1,3 +1,5 @@
+import { output } from '../output.js';
+
 class MessagesOrchestrator {
   constructor() {
     this.messages = {};
@@ -38,7 +40,7 @@ class MessagesOrchestrator {
   registerElapsedTime(messageID) {
     const receivedMessage = this.messages[messageID];
     receivedMessage.elapsedTime = receivedMessage.receivedAt - receivedMessage.publishedAt;
-    console.log(`registered message time ${messageID}`);
+    output.push(`registered message time ${messageID}`);
   }
 
   getAverageTimeResults() {
