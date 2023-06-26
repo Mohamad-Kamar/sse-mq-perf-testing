@@ -58,5 +58,5 @@ async function main(numOfQueues, numOfProducers, numOfConsumers, numOfMessages) 
   }
 }
 
-await main(1, 1, 1, 5000);
+await main(1, 1, 1, 50);
 console.log(output.join('\n'));
